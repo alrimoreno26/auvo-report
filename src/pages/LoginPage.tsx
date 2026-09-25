@@ -6,6 +6,7 @@ import { isLocalMode } from '../lib/supabase'
 const MESSAGES: Record<string, string> = {
   'Invalid login credentials': 'Email o contraseña incorrectos.',
   'Email not confirmed': 'Debe confirmar su email antes de ingresar.',
+  'User is banned': 'Su acceso está deshabilitado. Contacte a su administrador.',
 }
 
 export function LoginPage() {

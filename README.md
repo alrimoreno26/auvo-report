@@ -39,6 +39,12 @@ con sus datos y un enlace de un solo uso a `/crear-contrasena`, donde define su 
 Si el enlace vence, **Reenviar acceso** envía uno nuevo. Si el correo no se puede enviar, la app muestra el enlace
 para compartirlo a mano.
 
+Desde el menú **⋯** de cada fila también se puede **deshabilitar** a un usuario (no puede iniciar sesión; la cuenta
+y el rol se conservan y se puede **habilitar** de nuevo) o **eliminarlo** definitivamente (hay que escribir su email
+para confirmar). Nadie puede aplicar estas acciones sobre su propia cuenta, y no se puede dejar la plataforma sin
+ningún administrador activo. Una sesión ya abierta de un usuario deshabilitado dura como máximo lo que el token
+de acceso (1 h por defecto).
+
 Todo pasa por la Edge Function `supabase/functions/admin-users` (`index.ts` + `email.ts`, la plantilla del correo),
 que usa la service role key del lado del servidor.
 

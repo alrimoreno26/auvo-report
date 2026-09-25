@@ -220,3 +220,27 @@ nav.tabs .print{position:sticky;right:0;box-shadow:-14px 0 12px 2px rgba(255,255
 .login-card .success-icon{margin:0 0 4px}
 a.btn-secondary{display:inline-block;text-decoration:none;text-align:center}
 a.btn-secondary.center{align-self:flex-start}
+
+/* Acciones de usuarios: menú de fila, estados y confirmación */
+.row-menu{position:relative;display:inline-block}
+.row-menu-trigger{width:30px;height:30px;border:1px solid transparent;border-radius:8px;background:none;font-size:18px;line-height:1;color:var(--ink2);cursor:pointer}
+.row-menu-trigger:hover,.row-menu-trigger[aria-expanded=true]{border-color:var(--line);background:var(--surface);color:var(--p)}
+.row-menu-list{position:fixed;z-index:60;padding:5px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(34,29,46,.14);display:flex;flex-direction:column;text-align:left}
+.row-menu-list button{background:none;border:0;border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;font-weight:500;color:var(--ink);text-align:left;cursor:pointer;white-space:nowrap}
+.row-menu-list button:hover{background:var(--surface)}
+.row-menu-list button.danger{color:#B91C1C}
+.row-menu-list button.danger:hover{background:#FEF2F2}
+.row-menu-list button:disabled{opacity:.5;cursor:default}
+.status.disabled{color:var(--muted)}
+.users-table tr.row-disabled .user-cell{opacity:.55}
+.users-table tr.row-disabled .pill{filter:grayscale(1);opacity:.7}
+.spinner.dark{display:inline-block;border-color:rgba(91,33,182,.2);border-top-color:var(--p);vertical-align:middle;margin-right:8px}
+.notice.info{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+.btn-danger{background:#B91C1C;color:#fff;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn-danger:hover{background:#991B1B}
+.btn-danger:disabled{opacity:.45;cursor:default}
+.confirm-dialog{width:min(440px,calc(100vw - 32px))}
+.confirm-dialog .dialog-body{display:flex;flex-direction:column;gap:14px}
+.confirm-text p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.confirm-text p:last-child{margin-bottom:0}
+.confirm-text b{color:var(--ink)}

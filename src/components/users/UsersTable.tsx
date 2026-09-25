@@ -1,4 +1,7 @@
 import type { AppUser } from '../../api/users'
+import { RowMenu, type MenuAction } from '../ui/RowMenu'
+
+export type UserAction = 'resend' | 'disable' | 'enable' | 'delete'
 
 const dateFmt = new Intl.DateTimeFormat('es', { day: '2-digit', month: '2-digit', year: 'numeric' })
 const relFmt = new Intl.RelativeTimeFormat('es', { numeric: 'auto' })
@@ -28,12 +31,26 @@ interface Props {
   users: AppUser[]
   currentEmail?: string
   highlightId?: string | null
-  /** Id del usuario al que se le está reenviando el acceso */
-  resendingId?: string | null
-  onResend: (user: AppUser) => void
+  /** Id del usuario con una acción en curso */
+  busyId?: string | null
+  onAction: (action: UserAction, user: AppUser) => void
 }
 
-export function UsersTable({ users, currentEmail, highlightId, resendingId, onResend }: Props) {
+export function UsersTable({ users, currentEmail, highlightId, busyId, onAction }: Props) {
+  function actionsFor(u: AppUser): MenuAction[] {
+    // Sobre la propia cuenta no se ofrecen acciones (la función también lo impide)
+    if (u.email === currentEmail) return []
+    const list: MenuAction[] = []
+    if (!u.disabled && !u.last_sign_in_at) list.push({ label: 'Reenviar acceso', onSelect: () => onAction('resend', u) })
+    list.push(
+      u.disabled
+        ? { label: 'Habilitar', onSelect: () => onAction('enable', u) }
+        : { label: 'Deshabilitar', onSelect: () => onAction('disable', u) },
+    )
+    list.push({ label: 'Eliminar', danger: true, onSelect: () => onAction('delete', u) })
+    return list
+  }
+
   return (
     <table className="users-table">
       <thead>
@@ -48,7 +65,10 @@ export function UsersTable({ users, currentEmail, highlightId, resendingId, onRe
       </thead>
       <tbody>
         {users.map((u) => (
-          <tr key={u.id} className={u.id === highlightId ? 'row-new' : undefined}>
+          <tr
+            key={u.id}
+            className={[u.id === highlightId && 'row-new', u.disabled && 'row-disabled'].filter(Boolean).join(' ') || undefined}
+          >
             <td>
               <div className="user-cell">
                 <span className="avatar" aria-hidden>
@@ -74,7 +94,11 @@ export function UsersTable({ users, currentEmail, highlightId, resendingId, onRe
             </td>
             <td>
               {/* Sin ningún ingreso: todavía no creó su contraseña */}
-              {u.last_sign_in_at ? (
+              {u.disabled ? (
+                <span className="status disabled" title="No puede iniciar sesión">
+                  Deshabilitado
+                </span>
+              ) : u.last_sign_in_at ? (
                 <span className="status active">Activo</span>
               ) : (
                 <span className="status pending" title="Aún no creó su contraseña">
@@ -83,10 +107,10 @@ export function UsersTable({ users, currentEmail, highlightId, resendingId, onRe
               )}
             </td>
             <td className="actions">
-              {!u.last_sign_in_at && (
-                <button className="btn-ghost" onClick={() => onResend(u)} disabled={resendingId === u.id}>
-                  {resendingId === u.id ? 'Enviando…' : 'Reenviar acceso'}
-                </button>
+              {busyId === u.id ? (
+                <span className="spinner dark" aria-label="Procesando" />
+              ) : (
+                <RowMenu label={`Acciones para ${u.email}`} actions={actionsFor(u)} />
               )}
             </td>
           </tr>
