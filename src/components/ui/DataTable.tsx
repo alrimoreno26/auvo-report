@@ -1,9 +1,12 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { TableCell, TableData } from '../../types/report'
+import { Pagination } from './Pagination'
 
 interface Props extends TableData {
   /** Muestra un buscador que filtra por el texto de cualquier celda */
   searchPlaceholder?: string
+  /** Filas por página (0 = todas). Las tablas con menos filas no muestran paginación. */
+  pageSize?: number
 }
 
 type Sort = { col: number; asc: boolean } | null
@@ -41,9 +44,11 @@ function Cell({ cell }: { cell: TableCell }) {
   )
 }
 
-export function DataTable({ columns, rows, searchPlaceholder }: Props) {
+export function DataTable({ columns, rows, searchPlaceholder, pageSize: initialPageSize = 10 }: Props) {
   const [sort, setSort] = useState<Sort>(null)
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(initialPageSize)
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -55,8 +60,15 @@ export function DataTable({ columns, rows, searchPlaceholder }: Props) {
     })
   }, [rows, sort, query])
 
+  // Buscar u ordenar vuelve a la primera página; la página se acota por si el filtro redujo el total
+  const pages = pageSize ? Math.max(1, Math.ceil(visible.length / pageSize)) : 1
+  const current = Math.min(page, pages)
+  const shown = pageSize ? visible.slice((current - 1) * pageSize, current * pageSize) : visible
+  const paginated = rows.length > initialPageSize && initialPageSize > 0
+
   function toggle(col: number) {
     setSort((s) => (s?.col === col ? { col, asc: !s.asc } : { col, asc: true }))
+    setPage(1)
   }
 
   return (
@@ -67,9 +79,14 @@ export function DataTable({ columns, rows, searchPlaceholder }: Props) {
           type="search"
           placeholder={searchPlaceholder}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setPage(1)
+          }}
         />
       )}
+      {/* El scroll horizontal es solo de la tabla: el buscador y la paginación quedan fijos */}
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -87,7 +104,7 @@ export function DataTable({ columns, rows, searchPlaceholder }: Props) {
           </tr>
         </thead>
         <tbody>
-          {visible.map((row, r) => (
+          {(paginated ? shown : visible).map((row, r) => (
             <tr key={r} className={row.highlight ? 'hl' : undefined}>
               {row.cells.map((cell, i) => (
                 <td key={i} className={[columns[i]?.numeric && 'num', cell.tone].filter(Boolean).join(' ') || undefined}>
@@ -105,6 +122,19 @@ export function DataTable({ columns, rows, searchPlaceholder }: Props) {
           )}
         </tbody>
       </table>
+      </div>
+      {paginated && (
+        <Pagination
+          page={current}
+          pageSize={pageSize}
+          total={visible.length}
+          onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size)
+            setPage(1)
+          }}
+        />
+      )}
     </>
   )
 }
