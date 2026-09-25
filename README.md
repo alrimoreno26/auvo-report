@@ -33,15 +33,34 @@ En Supabase → Authentication → URL Configuration, poner la URL de Vercel com
 
 ## Usuarios y administradores
 
-La pantalla **Usuarios** (`/usuarios`) solo aparece para administradores: lista los usuarios y permite crearlos
-(rol Lector o Administrador, generador de contraseña). Llama a la Edge Function `supabase/functions/admin-users`,
+La pantalla **Usuarios** (`/usuarios`) solo aparece para administradores: lista los usuarios (activos / pendientes)
+y permite crearlos con rol Lector o Administrador. Al crear un usuario se le envía un **correo de acceso** (Resend)
+con sus datos y un enlace de un solo uso a `/crear-contrasena`, donde define su propia contraseña.
+Si el enlace vence, **Reenviar acceso** envía uno nuevo. Si el correo no se puede enviar, la app muestra el enlace
+para compartirlo a mano.
+
+Todo pasa por la Edge Function `supabase/functions/admin-users` (`index.ts` + `email.ts`, la plantilla del correo),
 que usa la service role key del lado del servidor.
 
-1. Desplegar la función: Supabase → Edge Functions → *Deploy a new function* → *Via Editor*, nombre `admin-users`,
-   pegar `supabase/functions/admin-users/index.ts` y desplegar. Luego, en la configuración de la función,
-   desactivar **Verify JWT** (la función valida la sesión y el rol por su cuenta).
-   Con la CLI: `supabase functions deploy admin-users --no-verify-jwt`.
-2. Crear el primer usuario desde Authentication → Users → *Add user* y hacerlo administrador en el SQL Editor:
+1. **Resend:** crear una cuenta en https://resend.com, verificar el dominio del remitente (Domains → Add domain,
+   cargar los registros DNS) y crear una API key.
+2. **Secretos de la función** (Supabase → Edge Functions → Secrets):
+
+   | Secreto | Ejemplo |
+   | --- | --- |
+   | `RESEND_API_KEY` | `re_...` |
+   | `EMAIL_FROM` | `Auvo Report <accesos@tudominio.com>` |
+   | `APP_URL` | `https://auvo-report.vercel.app` |
+   | `LINK_EXPIRES_HOURS` | `24` |
+
+3. **Vigencia del enlace:** Authentication → Sign In / Providers → Email → *Email OTP Expiration* = `86400` (24 h),
+   y el mismo valor en horas en `LINK_EXPIRES_HOURS` (es lo que dice el correo).
+4. **Desplegar la función** con sus dos archivos:
+   - Dashboard: Edge Functions → `admin-users` → editar, agregar el archivo `email.ts` y reemplazar `index.ts`.
+   - O con la CLI: `npx supabase functions deploy admin-users --no-verify-jwt --project-ref <id-del-proyecto>`.
+
+   En la configuración de la función, **Verify JWT** debe quedar desactivado (la función valida la sesión y el rol).
+5. **Primer administrador:** crearlo desde Authentication → Users → *Add user* y darle el rol en el SQL Editor:
 
    ```sql
    update auth.users
@@ -50,6 +69,8 @@ que usa la service role key del lado del servidor.
    ```
 
    Cerrar sesión y volver a entrar para que el rol se aplique.
+
+Vista previa del correo: `node scripts/preview-email.mjs` (o `… resend`) genera `data/email-preview.html`.
 
 ## Generar un reporte desde el Excel
 
@@ -93,6 +114,6 @@ src/
   report/       ReportView + una sección por archivo
   types/        esquema del JSON del reporte
   generator/    lectura del Excel, cálculo de indicadores y armado del reporte
-scripts/        extract-report.mjs, make-fixture.mjs
+scripts/        extract-report.mjs, make-fixture.mjs, preview-email.mjs
 supabase/       migraciones SQL
 ```

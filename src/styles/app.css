@@ -196,3 +196,27 @@ nav.tabs .print:disabled{opacity:.75;cursor:progress}
 @media (max-width:520px){.crumbs span,.crumbs a{display:none}}
 /* El botón de descarga queda siempre visible aunque las pestañas se desplacen */
 nav.tabs .print{position:sticky;right:0;box-shadow:-14px 0 12px 2px rgba(255,255,255,.95)}
+
+/* Correo de acceso: enlace para copiar, avisos y crear contraseña */
+.success-icon.warn{background:#FEF1DA;color:#B45309}
+.access-link{display:flex;gap:8px;align-items:center;margin:0 0 16px;padding:8px 8px 8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;text-align:left}
+.access-link code{flex:1;min-width:0;font:12px/1.4 ui-monospace,'SFMono-Regular',Consolas,monospace;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.access-link .btn-secondary{padding:6px 12px;font-size:12px;flex-shrink:0}
+.notice{display:flex;align-items:flex-start;gap:12px;margin:0 0 14px;padding:12px 14px;border-radius:10px;font-size:13px;border:1px solid}
+.notice > div{flex:1;min-width:0}
+.notice .access-link{margin:8px 0 0}
+.notice.ok{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+.notice.warn{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
+.notice.error{background:#FEF2F2;border-color:#FECACA;color:#B91C1C}
+.notice-close{background:none;border:0;font-size:18px;line-height:1;color:inherit;opacity:.6;cursor:pointer}
+.notice-close:hover{opacity:1}
+.users-table td.actions{text-align:right;white-space:nowrap}
+.users-table .btn-ghost:disabled{opacity:.6;cursor:progress}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.status:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.status.active{color:#15803D}
+.status.pending{color:#B45309}
+.login-card .field input{padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:var(--ink);background:#fff}
+.login-card .success-icon{margin:0 0 4px}
+a.btn-secondary{display:inline-block;text-decoration:none;text-align:center}
+a.btn-secondary.center{align-self:flex-start}

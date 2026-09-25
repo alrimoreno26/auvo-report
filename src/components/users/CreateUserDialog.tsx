@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { createUser, type AppUser, type Role } from '../../api/users'
-import { PasswordField } from './PasswordField'
+import { createUser, type AccessResult, type AppUser, type Role } from '../../api/users'
+import { AccessLinkBox } from './AccessLinkBox'
 
 interface Props {
   open: boolean
@@ -8,7 +8,7 @@ interface Props {
   onCreated: (user: AppUser) => void
 }
 
-const EMPTY = { name: '', email: '', password: '', role: 'viewer' as Role }
+const EMPTY = { name: '', email: '', role: 'viewer' as Role }
 
 const ROLES: { value: Role; title: string; description: string }[] = [
   { value: 'viewer', title: 'Lector', description: 'Consulta los reportes.' },
@@ -20,8 +20,7 @@ export function CreateUserDialog({ open, onClose, onCreated }: Props) {
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [created, setCreated] = useState<{ email: string; password: string } | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [result, setResult] = useState<AccessResult | null>(null)
 
   useEffect(() => {
     const dialog = ref.current!
@@ -32,8 +31,7 @@ export function CreateUserDialog({ open, onClose, onCreated }: Props) {
   function reset() {
     setForm(EMPTY)
     setError(null)
-    setCreated(null)
-    setCopied(false)
+    setResult(null)
   }
 
   function close() {
@@ -47,24 +45,16 @@ export function CreateUserDialog({ open, onClose, onCreated }: Props) {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
-    if (form.password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.')
     setSubmitting(true)
     try {
-      const user = await createUser({ ...form, email: form.email.trim(), name: form.name.trim() })
-      setCreated({ email: user.email, password: form.password })
-      onCreated(user)
+      const r = await createUser({ ...form, email: form.email.trim(), name: form.name.trim() })
+      setResult(r)
+      onCreated(r.user)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo crear el usuario.')
     } finally {
       setSubmitting(false)
     }
-  }
-
-  async function copyCredentials() {
-    if (!created) return
-    const url = `${location.origin}/login`
-    await navigator.clipboard.writeText(`Acceso a Auvo Report\n${url}\nEmail: ${created.email}\nContraseña: ${created.password}`)
-    setCopied(true)
   }
 
   return (
@@ -87,36 +77,38 @@ export function CreateUserDialog({ open, onClose, onCreated }: Props) {
           ×
         </button>
 
-        {created ? (
+        {result ? (
           <div className="dialog-success">
-            <div className="success-icon" aria-hidden>
-              ✓
+            <div className={`success-icon${result.emailSent ? '' : ' warn'}`} aria-hidden>
+              {result.emailSent ? '✓' : '!'}
             </div>
             <h3 id="create-user-title">Usuario creado</h3>
-            <p className="sub">
-              Comparta estas credenciales por un canal seguro. La contraseña no se volverá a mostrar.
-            </p>
-            <dl className="credentials">
-              <dt>Email</dt>
-              <dd>{created.email}</dd>
-              <dt>Contraseña</dt>
-              <dd>
-                <code>{created.password}</code>
-              </dd>
-            </dl>
+            {result.emailSent ? (
+              <p className="sub">
+                Enviamos un correo a <b>{result.user.email}</b> con el enlace para crear su contraseña e ingresar.
+              </p>
+            ) : (
+              <>
+                <p className="sub">
+                  No se pudo enviar el correo{result.emailError ? ` (${result.emailError})` : ''}. Comparta este enlace
+                  con <b>{result.user.email}</b> para que cree su contraseña:
+                </p>
+                <AccessLinkBox link={result.link!} />
+              </>
+            )}
             <div className="dialog-actions">
               <button type="button" className="btn-secondary" onClick={reset}>
                 Crear otro
               </button>
-              <button type="button" className="btn-primary" onClick={copyCredentials}>
-                {copied ? '✓ Copiado' : 'Copiar credenciales'}
+              <button type="button" className="btn-primary" onClick={close}>
+                Listo
               </button>
             </div>
           </div>
         ) : (
-          <form onSubmit={onSubmit} noValidate={false}>
+          <form onSubmit={onSubmit}>
             <h3 id="create-user-title">Nuevo usuario</h3>
-            <p className="sub">El usuario podrá ingresar de inmediato con estas credenciales.</p>
+            <p className="sub">Le enviaremos un correo con sus datos y un enlace para crear su contraseña.</p>
 
             <div className="field">
               <label htmlFor="cu-name">
@@ -143,8 +135,6 @@ export function CreateUserDialog({ open, onClose, onCreated }: Props) {
                 placeholder="nombre@empresa.com"
               />
             </div>
-
-            <PasswordField value={form.password} onChange={(v) => set('password', v)} />
 
             <fieldset className="field">
               <legend>Rol</legend>
@@ -176,7 +166,7 @@ export function CreateUserDialog({ open, onClose, onCreated }: Props) {
                 Cancelar
               </button>
               <button type="submit" className="btn-primary" disabled={submitting}>
-                {submitting ? 'Creando…' : 'Crear usuario'}
+                {submitting ? 'Creando…' : 'Crear y enviar acceso'}
               </button>
             </div>
           </form>

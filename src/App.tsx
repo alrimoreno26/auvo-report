@@ -7,6 +7,7 @@ import { isLocalMode, isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './pages/LoginPage'
 import { ReportPage } from './pages/ReportPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { SetPasswordPage } from './pages/SetPasswordPage'
 import { UsersPage } from './pages/UsersPage'
 
 // El generador (y la librería de Excel) solo se descarga al abrir esta pantalla
@@ -27,6 +28,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          {/* Pública: destino del enlace del correo de acceso */}
+          <Route path="/crear-contrasena" element={<SetPasswordPage />} />
           <Route
             path="/"
             element={
