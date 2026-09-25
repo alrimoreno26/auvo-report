@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { getReport } from '../api/reports'
+import { getPreviousComparison, getReport } from '../api/reports'
 import { AppBar } from '../components/layout/AppBar'
 import { ReportView } from '../report/ReportView'
+import type { Comparison } from '../report/compare'
+import { companyKey } from '../report/metrics'
 import type { Report } from '../types/report'
 
 const company = (r: Report) => r.meta.title.slice(1).join(' ') || r.meta.title.join(' ')
 
-type State = { status: 'loading' } | { status: 'error' | 'missing' } | { status: 'ok'; report: Report }
+type State =
+  | { status: 'loading' }
+  | { status: 'error' | 'missing' }
+  | { status: 'ok'; report: Report; comparison: Comparison | null }
 
 export function ReportPage() {
   const { slug } = useParams()
@@ -20,7 +25,17 @@ export function ReportPage() {
     let cancelled = false
     const done = (s: State) => !cancelled && setResult({ slug: slug!, state: s })
     getReport(slug!)
-      .then((report) => done(report ? { status: 'ok', report } : { status: 'missing' }))
+      .then(async (loaded) => {
+        if (!loaded) return done({ status: 'missing' })
+        const { report, summary } = loaded
+        // La comparación es opcional: si falla, el reporte se muestra igual
+        const comparison = await getPreviousComparison(
+          summary.company_key ?? companyKey(summary.company),
+          summary.period_start,
+          summary.slug,
+        ).catch(() => null)
+        done({ status: 'ok', report, comparison })
+      })
       .catch(() => done({ status: 'error' }))
     return () => {
       cancelled = true
@@ -38,7 +53,7 @@ export function ReportPage() {
     <>
       <AppBar crumb={state.status === 'ok' ? company(state.report) : undefined} />
       {state.status === 'ok' ? (
-        <ReportView report={state.report} backTo="/" />
+        <ReportView report={state.report} comparison={state.comparison} backTo="/" />
       ) : (
         <main className="wrap page">
           {state.status === 'loading' && <p className="muted">Cargando reporte…</p>}

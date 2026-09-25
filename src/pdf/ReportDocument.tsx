@@ -1,5 +1,6 @@
 import { Defs, Document, LinearGradient, Page, Rect, Stop, Svg, Text, View } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
+import type { Comparison } from '../report/compare'
 import type { Report } from '../types/report'
 import { PdfArea, PdfColumns, PdfHBar, PdfHeatmap, PdfWeekly } from './charts'
 import { AlertItem, Card, KpiGrid, Rich, SectionTitle, StackBar, Table } from './components'
@@ -161,7 +162,7 @@ const Note = ({ children }: { children: string }) => (
   <Text style={[s.cardSub, { marginTop: 6, marginBottom: 0 }]}>{pdfText(children)}</Text>
 )
 
-export function ReportDocument({ report }: { report: Report }) {
+export function ReportDocument({ report, comparison }: { report: Report; comparison?: Comparison | null }) {
   const { summary, alerts, evolution: ev, types, team, clients, quality, openTasks, footer, index } = report
   const half = cardInner(HALF_W)
   const full = cardInner(CONTENT_W)
@@ -190,7 +191,16 @@ export function ReportDocument({ report }: { report: Report }) {
         {/* 01 Resumen */}
         <Keep>
           <SectionTitle n={1} title={summary.title} lead={summary.lead} />
-          <KpiGrid kpis={summary.kpis} cols={4} />
+          {report.metrics && comparison && (
+            <Text style={{ fontSize: 7.5, lineHeight: 1.35, color: C.ink2, marginTop: -4, marginBottom: 8 }}>
+              Las variaciones comparan con el período anterior: <Text style={{ fontWeight: 700, color: C.ink }}>{comparison.period}</Text>
+              {'  ·  '}
+              <Text style={{ color: C.ok }}>verde: mejora</Text>
+              {'  ·  '}
+              <Text style={{ color: C.bad }}>rojo: empeora</Text>
+            </Text>
+          )}
+          <KpiGrid kpis={summary.kpis} cols={4} metrics={report.metrics} comparison={comparison} />
         </Keep>
 
         {/* 02 Puntos de atención */}
@@ -288,7 +298,7 @@ export function ReportDocument({ report }: { report: Report }) {
         {/* 07 Calidad en campo */}
         <Keep>
           <SectionTitle n={7} title={quality.title} lead={quality.lead} />
-          <KpiGrid kpis={quality.kpis} cols={5} />
+          <KpiGrid kpis={quality.kpis} cols={5} metrics={report.metrics} comparison={comparison} />
         </Keep>
         {[
           [quality.arrival, quality.duration],

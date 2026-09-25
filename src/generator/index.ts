@@ -1,8 +1,9 @@
 // Genera un reporte a partir del Excel "Informe de Tareas" (port de generar_reporte.py).
+import { companyKey } from '../report/metrics'
 import type { Report } from '../types/report'
 import { analyze } from './analyze'
 import { buildReport } from './build'
-import { prepare } from './prepare'
+import { prepare, type Task } from './prepare'
 import { readTaskReport } from './read'
 
 export interface GenerateOptions {
@@ -15,6 +16,10 @@ export interface GenerateOptions {
 export interface GeneratedReport {
   report: Report
   company: string
+  /** Clave normalizada para encontrar otros períodos de la misma empresa */
+  companyKey: string
+  /** Tareas normalizadas (se guardan como historial) */
+  tasks: Task[]
   /** yyyy-mm-dd */
   periodStart: string
   periodEnd: string
@@ -52,6 +57,8 @@ export async function generateReport(file: File, opts: GenerateOptions): Promise
   return {
     report,
     company: opts.empresa.trim(),
+    companyKey: companyKey(opts.empresa),
+    tasks,
     periodStart,
     periodEnd,
     taskCount: R.n,

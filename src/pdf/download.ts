@@ -1,3 +1,4 @@
+import type { Comparison } from '../report/compare'
 import type { Report } from '../types/report'
 
 /** Nombre de archivo: Reporte_<Empresa>_<inicio>_<fin>.pdf (como el generador en Python). */
@@ -14,15 +15,15 @@ export function pdfFileName(report: Report) {
 }
 
 /** Genera el PDF en el navegador. La librería se carga solo al usarla. */
-export async function renderReportPdf(report: Report): Promise<Blob> {
+export async function renderReportPdf(report: Report, comparison?: Comparison | null): Promise<Blob> {
   const [{ pdf }, { ReportDocument }] = await Promise.all([import('@react-pdf/renderer'), import('./ReportDocument')])
   // pdf() espera el elemento <Document>: ReportDocument no usa hooks, se invoca directamente
-  return pdf(ReportDocument({ report })).toBlob()
+  return pdf(ReportDocument({ report, comparison })).toBlob()
 }
 
 /** Genera el PDF y lo descarga con el nombre Reporte_<Empresa>_<inicio>_<fin>.pdf */
-export async function downloadReportPdf(report: Report) {
-  const blob = await renderReportPdf(report)
+export async function downloadReportPdf(report: Report, comparison?: Comparison | null) {
+  const blob = await renderReportPdf(report, comparison)
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

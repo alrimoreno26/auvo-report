@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { parse } from 'node-html-parser'
+import { KPI_METRIC, companyKey } from '../src/report/metrics.ts'
 
 const [input, output] = process.argv.slice(2)
 if (!input) {
@@ -121,11 +122,13 @@ const table = (tableEl) => ({
 const kpis = (container) =>
   container.querySelectorAll('.kpi').map((k) => {
     const bar = k.querySelector('.bar i')
+    const label = text(k.querySelector('span'))
     return {
-      label: text(k.querySelector('span')),
+      label,
       value: text(k.querySelector('b')),
       note: text(k.querySelector('small')) || undefined,
       progress: bar ? parseFloat(bar.getAttribute('style').match(/width:([\d.]+)%/)[1]) : undefined,
+      metric: KPI_METRIC[label],
     }
   })
 
@@ -293,8 +296,52 @@ const footer = {
   note: text(ft.querySelector('p')),
 }
 
+// ---------- indicadores (desde los textos ya formateados: son valores redondeados) ----------
+const fact = (label) => meta.facts.find((f) => f.label === label)?.value ?? ''
+const pct = (s) => (/%/.test(s) ? num(s) / 100 : undefined)
+// "1 h 14 min" → 74 · "27 min" → 27
+const minutes = (s) => {
+  const m = s.match(/^(?:(\d+) h)?\s*(?:(\d+) min)?$/)
+  return m && (m[1] || m[2]) ? +(m[1] ?? 0) * 60 + +(m[2] ?? 0) : undefined
+}
+// "4,1 h" → 4.1 · "45 min" → 0.75 · "3,2 días" → 76.8
+const hoursOf = (s) => {
+  const n = parseFloat(s.replace(',', '.'))
+  if (/días?$/.test(s)) return n * 24
+  if (/ h$/.test(s)) return n
+  if (/ min$/.test(s)) return n / 60
+  return undefined
+}
+const kpiOf = (label) => [...summary.kpis, ...quality.kpis].find((k) => k.label === label)
+const metricParsers = {
+  n: () => num(fact('Tareas analizadas')),
+  finN: () => num(kpiOf('Tareas finalizadas').value),
+  tasaFin: () => pct(kpiOf('Tareas finalizadas').note.match(/([\d.,]+%)/)?.[1] ?? ''),
+  pendN: () => num(kpiOf('Tareas abiertas').value),
+  tecnicos: () => num(kpiOf('Responsables activos').value),
+  ciRate: () => pct(kpiOf('Check-in registrado').value),
+  puntual: () => pct(kpiOf('Puntualidad').value),
+  durMed: () => minutes(kpiOf('Duración mediana').value),
+  respMed: () => hoursOf(kpiOf('Tiempo de respuesta').value),
+  coRate: () => pct(kpiOf('Check-out registrado').value),
+  gpsRate: () => pct(kpiOf('Check-in con GPS').value),
+  sinGeoRate: () => pct(kpiOf('Clientes sin coordenadas').value),
+  firmaRate: () => pct(kpiOf('Firma del cliente').value),
+  pendientesDoc: () => num(kpiOf('Pendientes de evidencia').value),
+}
+const metrics = {}
+for (const [key, parseMetric] of Object.entries(metricParsers)) {
+  try {
+    const v = parseMetric()
+    if (typeof v === 'number' && Number.isFinite(v)) metrics[key] = v
+  } catch {
+    // KPI ausente en este reporte: se omite
+  }
+}
+
 const report = {
   version: 1,
+  metrics,
   meta,
   index,
   summary,
@@ -314,15 +361,16 @@ writeFileSync(out, JSON.stringify(report, null, 2))
 console.log(`✓ ${out}`)
 
 // SQL listo para pegar en el SQL Editor de Supabase (upsert por slug)
-const fact = (label) => meta.facts.find((f) => f.label === label)?.value ?? ''
 const isoDate = (d) => d.split('/').reverse().join('-')
 const [periodStart, periodEnd] = fact('Período analizado').split('–').map((s) => isoDate(s.trim()))
 const slug = basename(out, '.json').toLowerCase().replace(/[^a-z0-9]+/g, '-')
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`
-const sql = `insert into public.reports (slug, company, period_start, period_end, data)
-values (${q(slug)}, ${q(fact('Empresa'))}, ${q(periodStart)}, ${q(periodEnd)}, $json$${JSON.stringify(report)}$json$::jsonb)
-on conflict (slug) do update set company = excluded.company, period_start = excluded.period_start,
-  period_end = excluded.period_end, data = excluded.data;
+// "91926 — Empresa" → "Empresa"
+const company = fact('Empresa').replace(/^.*? — /, '')
+const sql = `insert into public.reports (slug, company, company_key, period_start, period_end, data)
+values (${q(slug)}, ${q(company)}, ${q(companyKey(company))}, ${q(periodStart)}, ${q(periodEnd)}, $json$${JSON.stringify(report)}$json$::jsonb)
+on conflict (slug) do update set company = excluded.company, company_key = excluded.company_key,
+  period_start = excluded.period_start, period_end = excluded.period_end, data = excluded.data;
 `
 const sqlOut = out.replace(/\.json$/, '.sql')
 writeFileSync(sqlOut, sql)

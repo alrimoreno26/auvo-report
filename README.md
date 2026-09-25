@@ -25,7 +25,7 @@ En Supabase → Authentication → URL Configuration, poner la URL de Vercel com
 ## Configuración de Supabase
 
 1. Crear un proyecto en https://supabase.com.
-2. SQL Editor → ejecutar, en orden, `supabase/migrations/0001_reports.sql` y `0002_reports_admin_write.sql`.
+2. SQL Editor → ejecutar, en orden, las migraciones de `supabase/migrations/` (`0001` a `0003`).
 3. Authentication → Sign In / Providers → **desactivar "Allow new users to sign up"** y crear los usuarios desde
    Authentication → Users → *Add user*.
 4. Copiar `.env.example` a `.env.local` y completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
@@ -91,6 +91,17 @@ el JSON resultante en la tabla `reports`.
 
 Para probar sin datos reales: `node scripts/make-fixture.mjs` genera `data/fixtures/informe_tareas_prueba.xls`
 (480 tareas sintéticas) y un `.expected.json` con los indicadores esperados.
+
+## Historial y comparación entre períodos
+
+Cada reporte guarda sus indicadores numéricos (`data.metrics`) y, si se genera desde el Excel, sus tareas
+normalizadas en la tabla `report_tasks` (migración 0003). Los KPI del resumen y de calidad muestran la variación
+contra el **reporte anterior de la misma empresa** (misma `company_key`: el nombre sin mayúsculas ni acentos), en
+verde si mejoró y en rojo si empeoró; también en la vista previa y en el PDF. Se calcula al abrir el reporte, así que
+funciona aunque los reportes se carguen en otro orden.
+
+Para que un reporte cargado desde HTML sirva de base de comparación, volver a ejecutar su SQL con la versión actual
+de `extract-report.mjs` (incluye los indicadores, tomados de los valores ya redondeados del HTML).
 
 ## Cargar un reporte desde un HTML ya generado
 

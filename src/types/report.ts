@@ -1,4 +1,5 @@
-// Estructura del JSON de un reporte (generado por scripts/extract-report.mjs).
+// Estructura del JSON de un reporte (generado desde el Excel o con scripts/extract-report.mjs).
+import type { MetricKey, Metrics } from '../report/metrics'
 
 export type Tone = 'primary' | 'warn' | 'caution' | 'muted'
 export type AlertTone = 'ok' | 'warn' | 'info'
@@ -20,6 +21,8 @@ export interface Kpi {
   note?: string
   /** 0–100, dibuja la barra de progreso */
   progress?: number
+  /** Indicador con el que se compara contra el período anterior */
+  metric?: MetricKey
 }
 
 export interface Bar {
@@ -65,6 +68,8 @@ export interface TableData {
 
 export interface Report {
   version: 1
+  /** Valores numéricos de los indicadores (para comparar períodos); ausente en reportes antiguos */
+  metrics?: Metrics
   meta: {
     eyebrow: string
     title: string[]
@@ -131,6 +136,8 @@ export interface ReportSummary {
   id: string
   slug: string
   company: string
+  /** Clave normalizada de la empresa (migración 0003) */
+  company_key?: string
   period_start: string
   period_end: string
   created_at: string

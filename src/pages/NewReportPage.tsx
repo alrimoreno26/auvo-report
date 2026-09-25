@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { reportExists, saveReport } from '../api/reports'
+import { getPreviousComparison, reportExists, saveReport } from '../api/reports'
 import { AppBar } from '../components/layout/AppBar'
 import { FileDropzone } from '../components/upload/FileDropzone'
 import { generateReport, inspectFile, type GeneratedReport } from '../generator'
 import { fnum } from '../generator/format'
+import type { Comparison } from '../report/compare'
 import { ReportView } from '../report/ReportView'
 
 const ACCEPT = '.xls,.xlsx,.html,.htm'
@@ -24,6 +25,7 @@ export function NewReportPage() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GeneratedReport | null>(null)
   const [exists, setExists] = useState(false)
+  const [comparison, setComparison] = useState<Comparison | null>(null)
 
   async function onFile(f: File) {
     setFile(f)
@@ -51,7 +53,13 @@ export function NewReportPage() {
     try {
       const r = await generateReport(file, { empresa, codigo, tolerancia })
       setResult(r)
-      setExists(await reportExists(r.slug))
+      const [already, prev] = await Promise.all([
+        reportExists(r.slug),
+        // Sin comparación si falla (p. ej. falta la migración 0003): la vista previa se muestra igual
+        getPreviousComparison(r.companyKey, r.periodStart, r.slug).catch(() => null),
+      ])
+      setExists(already)
+      setComparison(prev)
       requestAnimationFrame(() => document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' }))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo generar el reporte.')
@@ -68,6 +76,8 @@ export function NewReportPage() {
       await saveReport({
         slug: result.slug,
         company: result.company,
+        companyKey: result.companyKey,
+        tasks: result.tasks,
         periodStart: result.periodStart,
         periodEnd: result.periodEnd,
         report: result.report,
@@ -166,7 +176,7 @@ export function NewReportPage() {
 
       {result && (
         <div id="preview" className="preview">
-          <ReportView report={result.report} />
+          <ReportView report={result.report} comparison={comparison} />
           <div className="preview-bar">
             <div className="wrap">
               <div className="preview-info">
@@ -177,6 +187,15 @@ export function NewReportPage() {
                 </span>
               </div>
               {exists && <span className="preview-warn">Ya existe un reporte de esta empresa y período: se reemplazará.</span>}
+              <span className="preview-compare">
+                {comparison ? (
+                  <>
+                    Compara con <b>{comparison.period}</b>
+                  </>
+                ) : (
+                  'Primer reporte de esta empresa: sin comparación'
+                )}
+              </span>
               <div className="preview-actions">
                 <button type="button" className="btn-secondary" onClick={() => setResult(null)} disabled={busy !== null}>
                   Descartar

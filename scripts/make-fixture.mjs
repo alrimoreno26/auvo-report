@@ -3,14 +3,24 @@
 // (HTML con extensión .xls) y los valores esperados de los indicadores principales,
 // calculados de forma independiente del generador, para validarlo.
 //
-// Uso: node scripts/make-fixture.mjs [salida.xls]   (por defecto data/fixtures/informe_tareas_prueba.xls)
+// Uso: node scripts/make-fixture.mjs [salida.xls] [--inicio dd/mm/yyyy] [--fin dd/mm/yyyy] [--seed n]
+//      (por defecto data/fixtures/informe_tareas_prueba.xls, 01/07/2026 – 24/09/2026, semilla 42)
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-const out = process.argv[2] ?? 'data/fixtures/informe_tareas_prueba.xls'
+const args = process.argv.slice(2)
+const opt = (name) => {
+  const i = args.indexOf(name)
+  return i >= 0 ? args[i + 1] : undefined
+}
+const out = args[0] && !args[0].startsWith('--') ? args[0] : 'data/fixtures/informe_tareas_prueba.xls'
+const parseDay = (s) => {
+  const [d, m, y] = s.split('/').map(Number)
+  return Date.UTC(y, m - 1, d)
+}
 
 // PRNG determinista (mulberry32) para que el archivo sea siempre el mismo
-let seed = 42
+let seed = Number(opt('--seed') ?? 42)
 const rand = () => {
   seed |= 0
   seed = (seed + 0x6d2b79f5) | 0
@@ -42,8 +52,8 @@ const fmtDur = (mins) => {
 }
 const fmtDist = (m) => (m < 0 ? '-100' : Math.round(m).toLocaleString('de-DE'))
 
-const INI = Date.UTC(2026, 6, 1) // 01/07/2026
-const FIN = Date.UTC(2026, 8, 24) // 24/09/2026
+const INI = opt('--inicio') ? parseDay(opt('--inicio')) : Date.UTC(2026, 6, 1) // 01/07/2026
+const FIN = opt('--fin') ? parseDay(opt('--fin')) : Date.UTC(2026, 8, 24) // 24/09/2026
 const TOL = 15
 
 const RESP = [

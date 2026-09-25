@@ -1,5 +1,7 @@
 import { Link, Text, View } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
+import { kpiDelta, type Comparison } from '../report/compare'
+import type { Metrics } from '../report/metrics'
 import type { AlertTone, Kpi, PillTone, StackSegment, TableData } from '../types/report'
 import { C, GAP, s } from './theme'
 import { fnum } from '../generator/format'
@@ -59,7 +61,16 @@ export function Rich({ text, style }: { text: string; style?: Style }) {
   )
 }
 
-export function KpiGrid({ kpis, cols }: { kpis: Kpi[]; cols: number }) {
+const DELTA_COLOR = { good: C.ok, bad: C.bad, neutral: C.muted }
+
+interface KpiGridProps {
+  kpis: Kpi[]
+  cols: number
+  metrics?: Metrics
+  comparison?: Comparison | null
+}
+
+export function KpiGrid({ kpis, cols, metrics, comparison }: KpiGridProps) {
   const rows: Kpi[][] = []
   for (let i = 0; i < kpis.length; i += cols) rows.push(kpis.slice(i, i + cols))
   return (
@@ -73,6 +84,19 @@ export function KpiGrid({ kpis, cols }: { kpis: Kpi[]; cols: number }) {
               </Text>
               <Text style={{ fontSize: cols > 4 ? 16 : 19, lineHeight: 1.2, fontWeight: 800, marginTop: 4, color: C.ink }}>{k.value}</Text>
               {k.note && <Text style={{ fontSize: 7, lineHeight: 1.35, color: C.muted, marginTop: 1 }}>{pdfText(k.note)}</Text>}
+              {(() => {
+                const d = kpiDelta(k, metrics, comparison)
+                if (!d) return null
+                // ▲▼ no están en la fuente embebida: se usa texto
+                const arrow = d.arrow === '=' ? '' : d.arrow === '▲' ? 'sube ' : 'baja '
+                return (
+                  <Text style={{ fontSize: 6.8, lineHeight: 1.3, fontWeight: 700, color: DELTA_COLOR[d.tone], marginTop: 3 }}>
+                    {arrow}
+                    {d.text}
+                    {d.suffix ? <Text style={{ fontWeight: 400 }}> {d.suffix}</Text> : null}
+                  </Text>
+                )
+              })()}
               {k.progress !== undefined && (
                 <View style={{ height: 3.5, backgroundColor: C.surface, borderRadius: 2, marginTop: 7 }}>
                   <View style={{ width: `${k.progress}%`, height: 3.5, backgroundColor: C.p2, borderRadius: 2 }} />

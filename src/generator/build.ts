@@ -3,6 +3,7 @@ import type { Bar, BarChartData, Kpi, PillTone, Report, TableCell, TableData, To
 import { DIAS, type Analysis, type Buckets } from './analyze'
 import { fdate, fdist, fdur, fhoras, fnum, fpct, isNum, nowStamp, ratio, roundHalfEven } from './format'
 import { insights } from './insights'
+import { KPI_METRIC, type Metrics } from '../report/metrics'
 
 export interface BuildOptions {
   /** Nombre de la empresa en el encabezado */
@@ -56,7 +57,29 @@ const kpi = (label: string, value: string, note: string, pct?: number): Kpi => (
   value,
   note,
   progress: pct !== undefined && isNum(pct) ? roundHalfEven(Math.min(100, pct * 100)) : undefined,
+  metric: KPI_METRIC[label],
 })
+
+/** Indicadores numéricos del período (sin valores indefinidos, para que el JSON quede limpio) */
+function metricsOf(R: Analysis): Metrics {
+  const all: Metrics = {
+    n: R.n,
+    finN: R.finN,
+    tasaFin: R.tasaFin,
+    pendN: R.pendN,
+    tecnicos: R.tecnicos,
+    ciRate: R.ciRate,
+    puntual: R.puntual,
+    durMed: R.durMed,
+    respMed: R.respMed,
+    coRate: R.coRate,
+    gpsRate: R.gpsRate,
+    sinGeoRate: R.sinGeoRate,
+    firmaRate: R.firmaRate,
+    pendientesDoc: R.pendientesDoc,
+  }
+  return Object.fromEntries(Object.entries(all).filter(([, v]) => isNum(v))) as Metrics
+}
 
 const shareOf = (b: Buckets) => {
   const total = b.reduce((s, [, v]) => s + v, 0)
@@ -373,5 +396,5 @@ export function buildReport(R: Analysis, opts: BuildOptions): Report {
     note: `Reporte generado automáticamente el ${stamp.date} a las ${stamp.time}.`,
   }
 
-  return { version: 1, meta, index, summary, alerts, evolution, types, team, clients, quality, openTasks, footer }
+  return { version: 1, metrics: metricsOf(R), meta, index, summary, alerts, evolution, types, team, clients, quality, openTasks, footer }
 }

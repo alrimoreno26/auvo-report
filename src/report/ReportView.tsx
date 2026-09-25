@@ -4,6 +4,8 @@ import { SectionNav } from '../components/layout/SectionNav'
 import { Tooltip } from '../components/ui/Tooltip'
 import { downloadReportPdf } from '../pdf/download'
 import type { Report } from '../types/report'
+import type { Comparison } from './compare'
+import { ComparisonContext } from './comparisonContext'
 import { AlertsSection } from './sections/AlertsSection'
 import { ClientsSection } from './sections/ClientsSection'
 import { EvolutionSection } from './sections/EvolutionSection'
@@ -30,13 +32,16 @@ interface Props {
   report: Report
   /** Ruta para volver (p. ej. al listado de reportes) */
   backTo?: string
+  /** Período anterior de la misma empresa: los KPI muestran la variación */
+  comparison?: Comparison | null
 }
 
-export function ReportView({ report, backTo }: Props) {
+export function ReportView({ report, backTo, comparison }: Props) {
   return (
+    <ComparisonContext.Provider value={{ metrics: report.metrics, comparison }}>
     <div className="report">
       <Hero {...report.meta} />
-      <SectionNav items={NAV} backTo={backTo} onDownloadPdf={() => downloadReportPdf(report)} />
+      <SectionNav items={NAV} backTo={backTo} onDownloadPdf={() => downloadReportPdf(report, comparison)} />
       <main className="wrap">
         <IndexSection {...report.index} />
         <SummarySection {...report.summary} />
@@ -51,5 +56,6 @@ export function ReportView({ report, backTo }: Props) {
       </main>
       <Tooltip />
     </div>
+    </ComparisonContext.Provider>
   )
 }
