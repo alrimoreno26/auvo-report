@@ -14,6 +14,11 @@ export function AppBar() {
         {isLocalMode && <span className="local-badge">Modo local</span>}
         {user && (
           <div className="appbar-user">
+            {user.isAdmin && (
+              <Link to="/usuarios/nuevo" className="btn-ghost">
+                Crear usuario
+              </Link>
+            )}
             <span>{user.email}</span>
             <button className="btn-ghost" onClick={() => signOut()}>
               Salir

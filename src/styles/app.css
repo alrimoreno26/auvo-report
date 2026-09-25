@@ -47,4 +47,17 @@
 .report-item:hover{border-color:#C4B5FD;box-shadow:0 4px 16px rgba(91,33,182,.08)}
 .report-item h4{margin:0;font-size:15px;color:var(--p)}
 .report-item p{margin:4px 0 0;color:var(--ink2);font-size:13px}
-@media (max-width:520px){.appbar-user span{display:none}.local-badge{display:none}}
+@media (max-width:520px){.appbar-user span,.appbar-user a.btn-ghost{display:none}.local-badge{display:none}}
+
+/* Formularios (crear usuario) */
+.back-link{display:inline-block;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--p);text-decoration:none}
+.form-card{max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.form-card label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--ink2)}
+.form-card label small{font-weight:400;color:var(--muted)}
+.form-card input:not([type=checkbox]){padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:var(--ink);background:#fff}
+.form-card input:focus{outline:2px solid var(--soft);border-color:var(--p2)}
+.form-card label.check{flex-direction:row;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink)}
+.form-card label.check input{margin-top:3px;accent-color:var(--p)}
+.form-card label.check span{display:flex;flex-direction:column;gap:2px}
+.form-success{margin:0;font-size:13px;background:#DCFCE7;color:#15803D;border-radius:8px;padding:8px 10px}
+a.btn-ghost{text-decoration:none;white-space:nowrap}

@@ -1,7 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider'
+import { RequireAdmin } from './auth/RequireAdmin'
 import { RequireAuth } from './auth/RequireAuth'
 import { isLocalMode, isSupabaseConfigured } from './lib/supabase'
+import { CreateUserPage } from './pages/CreateUserPage'
 import { LoginPage } from './pages/LoginPage'
 import { ReportPage } from './pages/ReportPage'
 import { ReportsPage } from './pages/ReportsPage'
@@ -34,6 +36,16 @@ export default function App() {
             element={
               <RequireAuth>
                 <ReportPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/usuarios/nuevo"
+            element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <CreateUserPage />
+                </RequireAdmin>
               </RequireAuth>
             }
           />

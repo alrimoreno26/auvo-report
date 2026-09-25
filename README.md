@@ -31,6 +31,23 @@ En Supabase → Authentication → URL Configuration, poner la URL de Vercel com
 4. Copiar `.env.example` a `.env.local` y completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
    (Project Settings → API). La anon key es pública; los datos quedan protegidos por RLS.
 
+## Usuarios y administradores
+
+La pantalla **Crear usuario** (`/usuarios/nuevo`) solo aparece para administradores y llama a la Edge Function
+`supabase/functions/create-user`, que usa la service role key del lado del servidor.
+
+1. Desplegar la función: Supabase → Edge Functions → *Deploy a new function* → *Via Editor*, nombre `create-user`,
+   pegar `supabase/functions/create-user/index.ts` y desplegar. (O con la CLI: `supabase functions deploy create-user`.)
+2. Crear el primer usuario desde Authentication → Users → *Add user* y hacerlo administrador en el SQL Editor:
+
+   ```sql
+   update auth.users
+   set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'
+   where email = 'tu@email.com';
+   ```
+
+   Cerrar sesión y volver a entrar para que el rol se aplique.
+
 ## Cargar un reporte
 
 ```bash
