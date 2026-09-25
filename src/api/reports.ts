@@ -184,3 +184,29 @@ export async function saveReport(r: NewReport): Promise<void> {
     if (insError) throw new Error(`El reporte se publicó, pero no se pudo guardar el historial de tareas: ${insError.message}`)
   }
 }
+
+export interface HistoryPoint {
+  slug: string
+  company: string
+  period_start: string
+  period_end: string
+  /** null: reporte publicado antes del historial (sin indicadores guardados) */
+  metrics: Metrics | null
+}
+
+/** Todos los reportes de una empresa con sus indicadores, del más antiguo al más reciente. */
+export async function getCompanyHistory(key: string): Promise<HistoryPoint[]> {
+  if (isLocalMode) {
+    return (await localReports())
+      .filter((r) => r.summary.company_key === key)
+      .map((r) => ({ ...r.summary, metrics: r.report.metrics ?? null }))
+      .sort((a, b) => a.period_start.localeCompare(b.period_start))
+  }
+  const { data, error } = await supabase!
+    .from('reports')
+    .select('slug, company, period_start, period_end, metrics:data->metrics')
+    .eq('company_key', key)
+    .order('period_start', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map((r) => ({ ...r, metrics: (r.metrics as Metrics | null) ?? null }))
+}

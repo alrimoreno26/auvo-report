@@ -276,3 +276,38 @@ a.btn-secondary.center{align-self:flex-start}
 @media print{.pagination{display:none}}
 .table-scroll{overflow-x:auto}
 .tbl:has(> .table-scroll){overflow-x:visible}
+
+/* Listado agrupado por empresa */
+.company-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;align-items:start}
+.company-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px 14px;display:flex;flex-direction:column;gap:10px}
+.company-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.company-head h4{margin:0;font-size:15px;color:var(--p)}
+.company-head .muted{font-size:12px;white-space:nowrap}
+.company-periods{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.company-periods a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:13px;font-variant-numeric:tabular-nums;transition:background .15s}
+.company-periods a:hover{background:#EDE9FE;color:var(--p)}
+.company-periods .latest{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--p);background:#fff;border:1px solid #DDD6FE;border-radius:999px;padding:1px 7px}
+.company-periods .chev{margin-left:auto;color:var(--muted);font-size:16px;line-height:1}
+.company-history{align-self:flex-start;font-size:13px;font-weight:600;color:var(--p2);text-decoration:none}
+.company-history:hover{text-decoration:underline}
+.compare-history{font-weight:600;color:var(--p2);text-decoration:none;margin-left:4px}
+.compare-history:hover{text-decoration:underline}
+
+/* Evolución de la empresa */
+.history .notice a{color:inherit;font-weight:600}
+.history-empty{padding:22px}
+.history-empty p{margin:6px 0 0;font-size:13px}
+.history-highlights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.history-highlights .kpi .sparkline{display:block;width:100%;height:40px;margin-top:10px}
+.history-table th a{color:inherit;text-decoration:none;border-bottom:1px dashed #C4B5FD}
+.history-table th a:hover{color:var(--p)}
+.history-table th{cursor:default}
+.history-table td{vertical-align:middle}
+.history-group td{background:var(--surface);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);padding:7px 10px}
+.history-value{font-weight:600;color:var(--ink)}
+.history-delta{font-size:11px;font-weight:600;margin-top:1px}
+.history-delta.good{color:#15803D}.history-delta.bad{color:#B91C1C}.history-delta.neutral{color:var(--muted)}
+.history-legend{margin-top:10px}
+.history-legend .good{color:#15803D}.history-legend .bad{color:#B91C1C}.history-legend .neutral{color:var(--muted)}
+.sparkline{vertical-align:middle}
+@media (max-width:900px){.history-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}}

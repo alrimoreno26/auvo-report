@@ -29,11 +29,9 @@ export function ReportPage() {
         if (!loaded) return done({ status: 'missing' })
         const { report, summary } = loaded
         // La comparación es opcional: si falla, el reporte se muestra igual
-        const comparison = await getPreviousComparison(
-          summary.company_key ?? companyKey(summary.company),
-          summary.period_start,
-          summary.slug,
-        ).catch(() => null)
+        const key = summary.company_key ?? companyKey(summary.company)
+        const previous = await getPreviousComparison(key, summary.period_start, summary.slug).catch(() => null)
+        const comparison = previous && { ...previous, historyUrl: `/empresas/${key}` }
         done({ status: 'ok', report, comparison })
       })
       .catch(() => done({ status: 'error' }))

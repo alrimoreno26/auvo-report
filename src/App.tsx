@@ -4,6 +4,7 @@ import { AuthProvider } from './auth/AuthProvider'
 import { RequireAdmin } from './auth/RequireAdmin'
 import { RequireAuth } from './auth/RequireAuth'
 import { isLocalMode, isSupabaseConfigured } from './lib/supabase'
+import { CompanyHistoryPage } from './pages/CompanyHistoryPage'
 import { LoginPage } from './pages/LoginPage'
 import { ReportPage } from './pages/ReportPage'
 import { ReportsPage } from './pages/ReportsPage'
@@ -65,6 +66,14 @@ export default function App() {
                 <RequireAdmin>
                   <UsersPage />
                 </RequireAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/empresas/:key"
+            element={
+              <RequireAuth>
+                <CompanyHistoryPage />
               </RequireAuth>
             }
           />

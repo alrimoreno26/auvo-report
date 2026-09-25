@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { Grid } from '../../components/ui/Grid'
 import { KpiCard } from '../../components/ui/KpiCard'
 import { Section } from '../../components/layout/Section'
@@ -12,6 +13,11 @@ export function SummarySection({ title, lead, kpis }: Report['summary']) {
         <p className="compare-note">
           <span className="compare-dot" aria-hidden />
           Las variaciones comparan con el período anterior: <b>{comparison.period}</b>
+          {comparison.historyUrl && (
+            <Link to={comparison.historyUrl} className="compare-history">
+              Ver evolución →
+            </Link>
+          )}
           <span className="compare-legend">
             <i className="good">▲ mejora</i> <i className="bad">▼ empeora</i> <i className="neutral">informativo</i>
           </span>

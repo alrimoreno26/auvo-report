@@ -100,6 +100,10 @@ contra el **reporte anterior de la misma empresa** (misma `company_key`: el nomb
 verde si mejoró y en rojo si empeoró; también en la vista previa y en el PDF. Se calcula al abrir el reporte, así que
 funciona aunque los reportes se carguen en otro orden.
 
+El listado agrupa los reportes por empresa y cada una tiene una página **Evolución** (`/empresas/<company_key>`)
+con todos sus períodos: tarjetas de tendencia, y una tabla con cada indicador por período, su variación y un
+minigráfico. Los reportes publicados antes del historial (sin indicadores) se señalan para volver a publicarlos.
+
 Para que un reporte cargado desde HTML sirva de base de comparación, volver a ejecutar su SQL con la versión actual
 de `extract-report.mjs` (incluye los indicadores, tomados de los valores ya redondeados del HTML).
 
