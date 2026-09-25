@@ -6,7 +6,9 @@ const TOP = 26
 
 /** Columnas verticales (distribuciones e histogramas). */
 export function ColumnChart({ bars, width = 520 }: { bars: Bar[]; width?: number }) {
+  if (!bars.length) return <p className="empty">Sin datos</p>
   const slot = (width - 24) / bars.length
+  const bw = Math.min(54, slot * 0.6)
   const max = Math.max(...bars.map((b) => b.value), 1)
 
   return (
@@ -19,7 +21,7 @@ export function ColumnChart({ bars, width = 520 }: { bars: Bar[]; width?: number
         return (
           <g key={b.label} className="hit" data-tip={b.tip ?? `${b.label}: ${b.display}`}>
             <rect x={x} y={TOP} width={slot} height={BASE - TOP} fill="transparent" />
-            <rect x={x + slot * 0.2} y={BASE - h} width={slot * 0.6} height={h} rx={4} fill={TONE_COLOR[b.tone]} />
+            <rect x={cx - bw / 2} y={BASE - h} width={bw} height={h} rx={4} fill={TONE_COLOR[b.tone]} />
             <text x={cx} y={BASE - h - 7} textAnchor="middle" className="val">
               {b.display}
             </text>

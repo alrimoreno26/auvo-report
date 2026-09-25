@@ -37,7 +37,8 @@ export function Heatmap({ days, hours, values }: Props) {
             {hours.map((h, j) => {
               const v = values[i][j]
               const t = v / max
-              const level = v === 0 ? -1 : Math.min(PALETTE.length - 1, Math.floor(t * PALETTE.length))
+              // Misma rampa que el generador: SEQ[1 + int(6·v/max)], sin usar el tono más claro
+              const level = v === 0 ? -1 : Math.min(PALETTE.length - 1, Math.floor((PALETTE.length - 1) * t))
               const x = X0 + j * (CW + GAP)
               return (
                 <g key={h}>

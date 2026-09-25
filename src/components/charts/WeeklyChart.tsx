@@ -1,4 +1,4 @@
-import { fmt, niceScale } from './scale'
+import { fmt, niceMax } from './scale'
 import { YAxis } from './YAxis'
 
 interface Point {
@@ -16,8 +16,10 @@ const BASE = 256
 
 /** Barras de tareas creadas + línea de finalizadas, por semana. */
 export function WeeklyChart({ points, legend }: { points: Point[]; legend: string[] }) {
-  const { max, step } = niceScale(Math.max(...points.map((p) => Math.max(p.created, p.finished))))
+  if (!points.length) return <p className="empty">Sin datos</p>
+  const max = niceMax(Math.max(...points.map((p) => Math.max(p.created, p.finished))))
   const slot = (R - L) / points.length
+  const bw = Math.min(46, slot * 0.62)
   const y = (v: number) => BASE - (v / max) * (BASE - TOP)
   const cx = (i: number) => L + slot * (i + 0.5)
 
@@ -34,13 +36,13 @@ export function WeeklyChart({ points, legend }: { points: Point[]; legend: strin
         </span>
       </div>
       <svg viewBox={`0 0 ${W} 300`} className="chart" role="img">
-        <YAxis max={max} step={step} left={L} right={R} top={TOP} bottom={BASE} />
+        <YAxis max={max} left={L} right={R} top={TOP} bottom={BASE} />
         {points.map((p, i) => (
           <g key={p.label}>
             <rect
-              x={cx(i) - slot * 0.31}
+              x={cx(i) - bw / 2}
               y={y(p.created)}
-              width={slot * 0.62}
+              width={bw}
               height={BASE - y(p.created)}
               rx={4}
               fill="#DDD6FE"

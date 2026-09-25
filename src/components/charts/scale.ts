@@ -7,12 +7,12 @@ export const TONE_COLOR: Record<Tone, string> = {
   muted: '#C4B5FD',
 }
 
-/** Máximo "redondo" del eje y su paso, p. ej. 115 → { max: 120, step: 30 } */
-export function niceScale(value: number, ticks = 4) {
-  const raw = Math.max(value, 1) / ticks
-  const pow = 10 ** Math.floor(Math.log10(raw))
-  const step = [1, 2, 2.5, 3, 5, 10].map((m) => m * pow).find((s) => s >= raw)!
-  return { max: step * ticks, step }
+/** Máximo "redondo" del eje (nice_max del generador): 115 → 120 · 35 → 40 */
+export function niceMax(v: number) {
+  if (v <= 0) return 1
+  const e = 10 ** Math.floor(Math.log10(v))
+  const f = v / e
+  return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((n) => f <= n) ?? 10) * e
 }
 
 export const fmt = (n: number) => n.toLocaleString('es')

@@ -23,7 +23,14 @@ export function QualitySection({ title, lead, kpis, arrival, duration, response,
           ))}
         </Grid>
         <Card title={evidence.title} subtitle={evidence.subtitle}>
-          <HBarChart bars={evidence.bars} width={1080} labelWidth={290} rowHeight={28} barHeight={14} />
+          <HBarChart
+            bars={evidence.bars}
+            width={1080}
+            labelWidth={290}
+            rowHeight={28}
+            barHeight={14}
+            emptyText="Sin pendientes registrados 🎉"
+          />
         </Card>
       </Grid>
     </Section>

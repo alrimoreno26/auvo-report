@@ -25,7 +25,7 @@ En Supabase → Authentication → URL Configuration, poner la URL de Vercel com
 ## Configuración de Supabase
 
 1. Crear un proyecto en https://supabase.com.
-2. SQL Editor → ejecutar `supabase/migrations/0001_reports.sql`.
+2. SQL Editor → ejecutar, en orden, `supabase/migrations/0001_reports.sql` y `0002_reports_admin_write.sql`.
 3. Authentication → Sign In / Providers → **desactivar "Allow new users to sign up"** y crear los usuarios desde
    Authentication → Users → *Add user*.
 4. Copiar `.env.example` a `.env.local` y completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
@@ -51,7 +51,21 @@ que usa la service role key del lado del servidor.
 
    Cerrar sesión y volver a entrar para que el rol se aplique.
 
-## Cargar un reporte
+## Generar un reporte desde el Excel
+
+Los administradores ven **+ Nuevo reporte** en el listado (`/reportes/nuevo`):
+
+1. Arrastrar el **Informe de Tareas** exportado de la plataforma (el export HTML `.xls`, o un `.xls`/`.xlsx` real).
+2. Completar empresa, código de cuenta (opcional) y tolerancia de puntualidad (15 min por defecto).
+3. **Generar vista previa** → revisar → **Publicar reporte**. Si ya existe uno de la misma empresa y período, se reemplaza.
+
+El archivo se procesa en el navegador (`src/generator/`, port en TypeScript de `generar_reporte.py`); solo se guarda
+el JSON resultante en la tabla `reports`.
+
+Para probar sin datos reales: `node scripts/make-fixture.mjs` genera `data/fixtures/informe_tareas_prueba.xls`
+(480 tareas sintéticas) y un `.expected.json` con los indicadores esperados.
+
+## Cargar un reporte desde un HTML ya generado
 
 ```bash
 npm run extract -- ruta/al/Reporte.html
@@ -78,6 +92,7 @@ src/
   pages/        LoginPage, ReportsPage, ReportPage
   report/       ReportView + una sección por archivo
   types/        esquema del JSON del reporte
-scripts/        extract-report.mjs
+  generator/    lectura del Excel, cálculo de indicadores y armado del reporte
+scripts/        extract-report.mjs, make-fixture.mjs
 supabase/       migraciones SQL
 ```
