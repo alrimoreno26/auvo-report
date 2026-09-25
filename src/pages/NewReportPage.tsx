@@ -4,6 +4,7 @@ import { reportExists, saveReport } from '../api/reports'
 import { AppBar } from '../components/layout/AppBar'
 import { FileDropzone } from '../components/upload/FileDropzone'
 import { generateReport, inspectFile, type GeneratedReport } from '../generator'
+import { fnum } from '../generator/format'
 import { ReportView } from '../report/ReportView'
 
 const ACCEPT = '.xls,.xlsx,.html,.htm'
@@ -103,7 +104,7 @@ export function NewReportPage() {
               <dl className="file-facts">
                 <div>
                   <dt>Tareas</dt>
-                  <dd>{info.taskCount.toLocaleString('es')}</dd>
+                  <dd>{fnum(info.taskCount)}</dd>
                 </div>
                 <div>
                   <dt>Período</dt>
@@ -172,7 +173,7 @@ export function NewReportPage() {
                 <span className="preview-tag">Vista previa</span>
                 <b>{result.company}</b>
                 <span className="muted">
-                  {date(result.periodStart)} – {date(result.periodEnd)} · {result.taskCount.toLocaleString('es')} tareas
+                  {date(result.periodStart)} – {date(result.periodEnd)} · {fnum(result.taskCount)} tareas
                 </span>
               </div>
               {exists && <span className="preview-warn">Ya existe un reporte de esta empresa y período: se reemplazará.</span>}

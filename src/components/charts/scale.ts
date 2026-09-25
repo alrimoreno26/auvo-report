@@ -1,3 +1,4 @@
+import { fnum } from '../../generator/format'
 import type { Tone } from '../../types/report'
 
 export const TONE_COLOR: Record<Tone, string> = {
@@ -15,4 +16,5 @@ export function niceMax(v: number) {
   return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((n) => f <= n) ?? 10) * e
 }
 
-export const fmt = (n: number) => n.toLocaleString('es')
+// toLocaleString('es') no agrupa números de 4 cifras (1156): se usa el mismo formato que el generador (1.156)
+export const fmt = (n: number) => fnum(n)

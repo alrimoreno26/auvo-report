@@ -5,6 +5,8 @@ import { AppBar } from '../components/layout/AppBar'
 import { ReportView } from '../report/ReportView'
 import type { Report } from '../types/report'
 
+const company = (r: Report) => r.meta.title.slice(1).join(' ') || r.meta.title.join(' ')
+
 type State = { status: 'loading' } | { status: 'error' | 'missing' } | { status: 'ok'; report: Report }
 
 export function ReportPage() {
@@ -34,9 +36,9 @@ export function ReportPage() {
 
   return (
     <>
-      <AppBar />
+      <AppBar crumb={state.status === 'ok' ? company(state.report) : undefined} />
       {state.status === 'ok' ? (
-        <ReportView report={state.report} />
+        <ReportView report={state.report} backTo="/" />
       ) : (
         <main className="wrap page">
           {state.status === 'loading' && <p className="muted">Cargando reporte…</p>}

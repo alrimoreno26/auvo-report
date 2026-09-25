@@ -2,7 +2,12 @@ import { NavLink } from 'react-router'
 import { useAuth } from '../../auth/context'
 import { isLocalMode } from '../../lib/supabase'
 
-export function AppBar() {
+interface Props {
+  /** Página actual dentro de Reportes (breadcrumb): Reportes / <crumb> */
+  crumb?: string
+}
+
+export function AppBar({ crumb }: Props = {}) {
   const { user, signOut } = useAuth()
 
   return (
@@ -11,6 +16,15 @@ export function AppBar() {
         <NavLink to="/" className="brand">
           <span className="brand-mark">A</span> Auvo Report
         </NavLink>
+        {crumb && (
+          <nav className="crumbs" aria-label="Ruta de navegación">
+            <NavLink to="/" end>
+              Reportes
+            </NavLink>
+            <span aria-hidden>/</span>
+            <b aria-current="page">{crumb}</b>
+          </nav>
+        )}
         {isLocalMode && <span className="local-badge">Modo local</span>}
         {user && (
           <div className="appbar-user">

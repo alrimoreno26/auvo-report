@@ -2,6 +2,7 @@ import { Hero } from '../components/layout/Hero'
 import { ReportFooter } from '../components/layout/ReportFooter'
 import { SectionNav } from '../components/layout/SectionNav'
 import { Tooltip } from '../components/ui/Tooltip'
+import { downloadReportPdf } from '../pdf/download'
 import type { Report } from '../types/report'
 import { AlertsSection } from './sections/AlertsSection'
 import { ClientsSection } from './sections/ClientsSection'
@@ -25,11 +26,17 @@ const NAV = [
   { id: 'abiertas', label: 'Tareas abiertas' },
 ]
 
-export function ReportView({ report }: { report: Report }) {
+interface Props {
+  report: Report
+  /** Ruta para volver (p. ej. al listado de reportes) */
+  backTo?: string
+}
+
+export function ReportView({ report, backTo }: Props) {
   return (
     <div className="report">
       <Hero {...report.meta} />
-      <SectionNav items={NAV} />
+      <SectionNav items={NAV} backTo={backTo} onDownloadPdf={() => downloadReportPdf(report)} />
       <main className="wrap">
         <IndexSection {...report.index} />
         <SummarySection {...report.summary} />
