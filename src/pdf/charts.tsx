@@ -1,6 +1,7 @@
 // Gráficos vectoriales para el PDF, dibujados a su tamaño final en puntos (sin escalar fuentes).
 import { Circle, G, Line, Polygon, Polyline, Rect, Svg, Text } from '@react-pdf/renderer'
 import { niceMax, TONE_COLOR } from '../components/charts/scale'
+import { fitText, labelColumnWidth } from '../components/charts/textFit'
 import { fnum } from '../generator/format'
 import type { Bar } from '../types/report'
 import { C } from './theme'
@@ -40,16 +41,12 @@ function YGrid({ max, left, right, top, bottom }: { max: number; left: number; r
   )
 }
 
-/** Recorta una etiqueta para que entre en `width` puntos (estimación por ancho medio de carácter). */
-function fitLabel(label: string, width: number, fontSize = 6.5) {
-  const max = Math.max(4, Math.floor(width / (fontSize * 0.5)))
-  return label.length <= max ? label : label.slice(0, max - 1).trimEnd() + '…'
-}
-
 /** Barras horizontales (ranking). */
 export function PdfHBar({ bars, width, labelWidth = 92, rowHeight = 15 }: { bars: Bar[]; width: number; labelWidth?: number; rowHeight?: number }) {
   if (!bars.length) return <Svg style={{ flexShrink: 0 }} width={width} height={14}><Label x={0} y={9}>Sin datos</Label></Svg>
-  const x0 = labelWidth + 6
+  // Igual que en la web: la columna de etiquetas crece con los nombres (hasta el 42%) y recorta el resto
+  const lw = labelColumnWidth(bars.map((b) => b.label), FONT.fontSize, Math.min(labelWidth, 50), Math.max(labelWidth, width * 0.42))
+  const x0 = lw + 6
   const maxBar = width - x0 - 34
   const max = Math.max(...bars.map((b) => b.value), 1)
   const barH = Math.min(8, rowHeight - 6)
@@ -61,8 +58,8 @@ export function PdfHBar({ bars, width, labelWidth = 92, rowHeight = 15 }: { bars
         const mid = y + rowHeight / 2 + 2.2
         return (
           <G key={b.label}>
-            <Label x={labelWidth} y={mid} anchor="end" fill={C.ink2}>
-              {fitLabel(b.label, labelWidth)}
+            <Label x={lw} y={mid} anchor="end" fill={C.ink2}>
+              {fitText(b.label, lw, FONT.fontSize)}
             </Label>
             <Rect x={x0} y={y + (rowHeight - barH) / 2} width={w} height={barH} rx={2} fill={TONE_COLOR[b.tone]} />
             <Label x={x0 + w + 4} y={mid} fill={C.ink} style={VAL}>
