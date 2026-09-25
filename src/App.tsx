@@ -3,10 +3,10 @@ import { AuthProvider } from './auth/AuthProvider'
 import { RequireAdmin } from './auth/RequireAdmin'
 import { RequireAuth } from './auth/RequireAuth'
 import { isLocalMode, isSupabaseConfigured } from './lib/supabase'
-import { CreateUserPage } from './pages/CreateUserPage'
 import { LoginPage } from './pages/LoginPage'
 import { ReportPage } from './pages/ReportPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { UsersPage } from './pages/UsersPage'
 
 export default function App() {
   if (!isSupabaseConfigured && !isLocalMode) {
@@ -40,11 +40,11 @@ export default function App() {
             }
           />
           <Route
-            path="/usuarios/nuevo"
+            path="/usuarios"
             element={
               <RequireAuth>
                 <RequireAdmin>
-                  <CreateUserPage />
+                  <UsersPage />
                 </RequireAdmin>
               </RequireAuth>
             }

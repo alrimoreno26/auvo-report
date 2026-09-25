@@ -33,11 +33,14 @@ En Supabase → Authentication → URL Configuration, poner la URL de Vercel com
 
 ## Usuarios y administradores
 
-La pantalla **Crear usuario** (`/usuarios/nuevo`) solo aparece para administradores y llama a la Edge Function
-`supabase/functions/create-user`, que usa la service role key del lado del servidor.
+La pantalla **Usuarios** (`/usuarios`) solo aparece para administradores: lista los usuarios y permite crearlos
+(rol Lector o Administrador, generador de contraseña). Llama a la Edge Function `supabase/functions/admin-users`,
+que usa la service role key del lado del servidor.
 
-1. Desplegar la función: Supabase → Edge Functions → *Deploy a new function* → *Via Editor*, nombre `create-user`,
-   pegar `supabase/functions/create-user/index.ts` y desplegar. (O con la CLI: `supabase functions deploy create-user`.)
+1. Desplegar la función: Supabase → Edge Functions → *Deploy a new function* → *Via Editor*, nombre `admin-users`,
+   pegar `supabase/functions/admin-users/index.ts` y desplegar. Luego, en la configuración de la función,
+   desactivar **Verify JWT** (la función valida la sesión y el rol por su cuenta).
+   Con la CLI: `supabase functions deploy admin-users --no-verify-jwt`.
 2. Crear el primer usuario desde Authentication → Users → *Add user* y hacerlo administrador en el SQL Editor:
 
    ```sql
